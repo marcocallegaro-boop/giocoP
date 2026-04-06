@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gatto e Topolino</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #a5d6a7; font-family: 'Comic Sans MS', sans-serif; }
+        #game-board { width: 100vw; height: 100vh; position: relative; touch-action: none; }
+        
+        /* Stile per il Gatto e i Topi */
+        .sprite { 
+            position: absolute; 
+            transition: transform 0.2s ease-out; /* Transizione fluida per l'ingrandimento */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .cat { font-size: 100px; z-index: 10; }
+        .mouse { font-size: 60px; z-index: 5; }
+
+        /* Effetto ingrandimento al passaggio del mouse richiesto */
+        .sprite:hover {
+            transform: scale(1.3);
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-board">
+    <div id="player-cat" class="sprite cat">🐱</div>
+</div>
+
+<script>
+    const board = document.getElementById('game-board');
+    const cat = document.getElementById('player-cat');
+
+    // Caricamento suoni (devono essere nella stessa cartella dell'index.html)
+    const soundCat = new Audio('gatto.mp3');
+    const soundMouse = new Audio('topo.mp3');
+
+    // Funzione per muovere il gatto
+    board.addEventListener('pointerdown', (e) => {
+        cat.style.left = (e.clientX - 50) + 'px';
+        cat.style.top = (e.clientY - 50) + 'px';
+        checkCollision();
+    });
+
+    function createMouse() {
+        const mouse = document.createElement('div');
+        mouse.className = 'sprite mouse';
+        mouse.innerHTML = '🐭';
+        mouse.style.left = Math.random() * (window.innerWidth - 80) + 'px';
+        mouse.style.top = Math.random() * (window.innerHeight - 80) + 'px';
+        
+        // Suono del topo quando appare o viene toccato
+        mouse.addEventListener('pointerdown', () => soundMouse.play());
+        
+        board.appendChild(mouse);
+    }
+
+    function checkCollision() {
+        const mice = document.querySelectorAll('.mouse');
+        const catRect = cat.getBoundingClientRect();
+
+        mice.forEach(mouse => {
+            const mouseRect = mouse.getBoundingClientRect();
+            if (!(catRect.right < mouseRect.left || catRect.left > mouseRect.right || 
+                  catRect.bottom < mouseRect.top || catRect.top > mouseRect.bottom)) {
+                
+                soundCat.play(); // Il gatto fa miao quando mangia
+                mouse.remove();
+                cat.innerHTML = '😸';
+                setTimeout(() => { cat.innerHTML = '🐱'; }, 500);
+                
+                // Ne creiamo uno nuovo dopo un attimo
+                setTimeout(createMouse, 1000);
+            }
+        });
+    }
+
+    // Inizia il gioco con 3 topolini
+    for(let i=0; i<3; i++) createMouse();
+</script>
+</body>
+</html>
